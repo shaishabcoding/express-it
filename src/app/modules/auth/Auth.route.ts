@@ -21,12 +21,6 @@ router.post(
 );
 
 router.post(
-  '/register/host',
-  purifyRequest(UserValidations.createHost),
-  UserControllers.createHost,
-);
-
-router.post(
   '/login',
   purifyRequest(AuthValidations.login),
   temUser('+password'),

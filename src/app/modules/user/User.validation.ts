@@ -41,22 +41,6 @@ export const UserValidations = {
     }),
   }),
 
-  createHost: z.object({
-    body: z.object({
-      email: z
-        .string({
-          required_error: 'Email is missing',
-        })
-        .email('Give a valid email'),
-      password: z
-        .string({
-          required_error: 'Password is missing',
-        })
-        .min(6, 'Password must be at least 6 characters long'),
-      role: z.literal(EUserRole.HOST).default(EUserRole.HOST),
-    }),
-  }),
-
   edit: z.object({
     body: z.object({
       name: z.string().optional(),

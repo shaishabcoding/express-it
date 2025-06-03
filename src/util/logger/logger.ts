@@ -1,41 +1,32 @@
-/* eslint-disable no-undef, @typescript-eslint/no-var-requires */
-import path from 'path';
-import DailyRotateFile from 'winston-daily-rotate-file';
-import { createDir } from '../file/createDir';
-import config from '../../config';
+/* eslint-disable no-console */
 import { createLogger, format, transports } from 'winston';
+import 'winston-mongodb';
+import config from '../../config';
+
 const { combine, timestamp, label, printf } = format;
 
-const myFormat = printf((info: any) => {
-  const { level, message, label, timestamp } = info;
-  const date = new Date(timestamp);
-  const hour = date.getHours();
-  const minutes = date.getMinutes();
-  const seconds = date.getSeconds();
-
-  return `${date.toDateString()} ${hour}:${minutes}:${seconds} [${label}] ${level}: ${message}`;
+const customFormat = printf(({ level, message, label, timestamp }) => {
+  return `${timestamp} [${label}] ${level}: ${message}`;
 });
-
-const logDir = path.resolve(process.cwd(), 'winston');
-const successLogDir = path.join(logDir, 'success');
-const errorLogDir = path.join(logDir, 'error');
-
-createDir(successLogDir);
-createDir(errorLogDir);
 
 /**
  * Logger for success messages
  */
-const logger = createLogger({
+export const logger = createLogger({
   level: 'info',
-  format: combine(label({ label: config.server.name }), timestamp(), myFormat),
+  format: combine(
+    label({ label: config.server.name }),
+    timestamp(),
+    customFormat,
+  ),
   transports: [
     new transports.Console(),
-    new DailyRotateFile({
-      filename: path.join(successLogDir, '%DATE%-success.log'),
-      datePattern: 'DD-MM-YYYY-HH',
-      maxSize: '20m',
-      maxFiles: '1d',
+    new transports.MongoDB({
+      db: config.url.database,
+      options: { useUnifiedTopology: true },
+      collection: 'app_logs',
+      tryReconnect: true,
+      level: 'info',
     }),
   ],
 });
@@ -43,18 +34,21 @@ const logger = createLogger({
 /**
  * Logger for error messages
  */
-const errorLogger = createLogger({
+export const errorLogger = createLogger({
   level: 'error',
-  format: combine(label({ label: config.server.name }), timestamp(), myFormat),
+  format: combine(
+    label({ label: config.server.name }),
+    timestamp(),
+    customFormat,
+  ),
   transports: [
     new transports.Console(),
-    new DailyRotateFile({
-      filename: path.join(errorLogDir, '%DATE%-error.log'),
-      datePattern: 'DD-MM-YYYY-HH',
-      maxSize: '20m',
-      maxFiles: '1d',
+    new transports.MongoDB({
+      db: config.url.database,
+      options: { useUnifiedTopology: true },
+      collection: 'error_logs',
+      tryReconnect: true,
+      level: 'error',
     }),
   ],
 });
-
-export { errorLogger, logger };
