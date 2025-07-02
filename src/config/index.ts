@@ -5,7 +5,7 @@ import { genSecret } from '../util/crypto/genSecret';
 import getIpAddress from '../util/server/getIpAddress';
 
 const node_env = process.env.NODE_ENV ?? 'development';
-const server_name = process.env.SERVER_NAME ?? 'BarBar';
+const server_name = process.env.SERVER_NAME ?? 'Server';
 const email = process.env.EMAIL_USER ?? 'admin@gmail.com';
 
 /**

@@ -7,6 +7,7 @@ import { Morgan } from './util/logger/morgen';
 import cookieParser from 'cookie-parser';
 import ServerError from './errors/ServerError';
 import config from './config';
+import { imageRetriever } from './app/middlewares/capture';
 
 /**
  * The main application instance
@@ -18,6 +19,8 @@ const app = express();
 
 // Serve static files
 app.use(express.static('public'), express.static('uploads'));
+
+app.get('/images/:filename', imageRetriever);
 
 // Configure middleware
 app.use(

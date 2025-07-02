@@ -21,22 +21,52 @@ mongoose.connection.on('connected', () => {
 /**
  * @description Multer middleware to handle image uploads to MongoDB GridFS
  */
-const imageUploader = () =>
+const capture = (fields: {
+  [field: string]: {
+    default?: string | string[];
+    maxCount?: number;
+    size?: number;
+  };
+}) =>
   catchAsync(async (req, res, next) => {
-    await new Promise<void>((resolve, reject) =>
-      upload(req, res, err => (err ? reject(err) : resolve())),
-    );
+    Object.keys(fields).forEach(field => {
+      fields[field].default ??= config.server.default_avatar;
+      fields[field].maxCount ??= 5;
+      fields[field].size ??= 5;
+    });
 
-    const files = req.files as { images?: Express.Multer.File[] };
-    if (files?.images?.length)
-      req.body.images = files.images.map(
-        ({ filename }) => `/images/${filename}`,
+    try {
+      await new Promise<void>((resolve, reject) =>
+        upload(fields)(req, res, err => (err ? reject(err) : resolve())),
       );
 
-    next();
+      const files = req.files as { [field: string]: Express.Multer.File[] };
+
+      Object.keys(fields).forEach(field => {
+        if (files?.[field]?.length) {
+          const images = files[field].map(
+            ({ filename }) => `/images/${filename}`,
+          );
+
+          req.body[field] = Array.isArray(fields[field].default)
+            ? images
+            : images[0];
+        }
+      });
+
+      next();
+    } catch (error) {
+      errorLogger.error(error);
+
+      Object.keys(fields).forEach(field => {
+        req.body[field] = fields[field].default;
+      });
+
+      next();
+    }
   });
 
-export default imageUploader;
+export default capture;
 
 /**
  * @description Retrieves an image from MongoDB GridFS
@@ -140,4 +170,18 @@ const fileFilter = (
   );
 };
 
-const upload = multer({ storage, fileFilter }).fields([{ name: 'images' }]);
+const upload = (fields: {
+  [field: string]: {
+    default?: string | string[];
+    maxCount?: number;
+    size?: number;
+  };
+}) =>
+  multer({ storage, fileFilter }).fields(
+    Object.keys(fields).map(field => ({
+      name: field,
+      maxCount: fields[field].maxCount || undefined,
+      default: fields[field].default,
+      size: (fields[field].size || 5) * 1024 * 1024,
+    })),
+  );

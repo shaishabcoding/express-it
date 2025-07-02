@@ -4,18 +4,16 @@ import { AuthValidations } from './Auth.validation';
 import auth from '../../middlewares/auth';
 import { UserControllers } from '../user/User.controller';
 import { UserValidations } from '../user/User.validation';
-import capture from '../../middlewares/capture';
 import purifyRequest from '../../middlewares/purifyRequest';
 import { temUser } from '../../middlewares/temUser';
 import { OtpRoutes } from '../otp/Otp.route';
+import capture from '../../middlewares/capture';
 
 const router = express.Router();
 
 router.post(
   '/register',
-  capture({
-    fields: [{ name: 'avatar', maxCount: 1, width: 300 }],
-  }),
+  capture({ avatar: { maxCount: 1, size: 5 * 1024 * 1024 } }),
   purifyRequest(UserValidations.createUser),
   UserControllers.create,
 );
