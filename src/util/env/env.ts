@@ -10,7 +10,12 @@ import colors from 'colors';
  * @param defaultValue - The default value to return if the environment variable is not found
  * @returns The value of the environment variable or the default value
  */
-export default function env<T>(key: string, defaultValue?: T): T {
+export default function env<T>(
+  key: string,
+  defaultValue?: T,
+  level: string | null = null,
+  start = true,
+): T {
   key = key.toSnakeCase().toUpperCase();
   let value: any = process.env[key];
 
@@ -27,11 +32,20 @@ export default function env<T>(key: string, defaultValue?: T): T {
     if (fs.existsSync(envPath)) {
       const envData = fs.readFileSync(envPath, 'utf8');
 
-      const keyRegex = new RegExp(`^${key}=`, 'm');
+      const keyRegex = new RegExp(`^${key} =`, 'm');
 
       if (!keyRegex.test(envData))
-        fs.appendFileSync(envPath, `\n${key}=${defaultValue}\n`, 'utf8');
-    } else fs.writeFileSync(envPath, `${key}=${defaultValue}\n`, 'utf8');
+        fs.appendFileSync(
+          envPath,
+          `${level && start ? `# ${level}\n` : ''}${key} = "${defaultValue}"${level && !start ? `\n# ${level}\n\n` : ''}\n`,
+          'utf8',
+        );
+    } else
+      fs.writeFileSync(
+        envPath,
+        `${level ? `# ${level}\n` : ''}${key} = "${defaultValue}"\n`,
+        'utf8',
+      );
 
     console.log(
       colors.green(`✅ Environment variable ${key} set to ${defaultValue}`),

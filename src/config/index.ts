@@ -2,12 +2,11 @@ import './configure';
 import env from '../util/env/env';
 import type ms from 'ms';
 import { genSecret } from '../util/crypto/genSecret';
+import getIpAddress from '../util/server/getIpAddress';
 
-const node_env = env<string>('node env', 'development');
-const name = env('name', 'BarBar');
-const email = env('email user', 'admin@gmail.com');
-const ip_address = env('ip address', '0.0.0.0');
-const port = env('port', Math.floor(Math.random() * 1_000) + 3_000);
+const node_env = process.env.NODE_ENV ?? 'development';
+const server_name = process.env.SERVER_NAME ?? 'BarBar';
+const email = process.env.EMAIL_USER ?? 'admin@gmail.com';
 
 /**
  * Configuration object for the application
@@ -17,30 +16,39 @@ const port = env('port', Math.floor(Math.random() * 1_000) + 3_000);
  */
 const config = {
   server: {
-    name,
-    node_env,
-    ip_address,
-    port,
-    isDevelopment: node_env !== 'production',
+    node_env: env<string>('node env', node_env, 'Server info - start'),
     allowed_origins: env('allowed origins', ['*']),
+    ip_address: env('ip address', getIpAddress()),
+    port: env('port', Math.floor(Math.random() * 1_000) + 3_000),
     developer: env('developer', 'Shaishab Chandra Shil'),
-    href: 'http://localhost:3000',
+    name: env('server name', server_name),
+    isDevelopment: node_env !== 'production',
     logo: env('logo', '/images/logo.png'),
     default_avatar: env('default avatar', '/images/placeholder.png'),
+    mock_mail: env('mock mail', true, 'Server info - end', false),
   },
+
   url: {
     database: env(
       'database url',
-      `mongodb://127.0.0.1:27017/${name.toLowerCase().replace(' ', '-')}`,
+      `mongodb://127.0.0.1:27017/${server_name.toLowerCase().replace(' ', '-')}`,
+      'Url info - start',
     ),
     redis: env('redis url', 'redis://redis:6379'),
     payment: {
       success: env('payment success url', `/payment/success`),
       cancel: env('payment cancel url', `/payment/cancel`),
     },
-    api_doc: env('api doc', ''),
+    api_doc: env('api doc', '', 'Url info - end', false),
   },
-  bcrypt_salt_rounds: env('bcrypt salt rounds', 10),
+
+  bcrypt_salt_rounds: env('bcrypt salt rounds', 10, 'Authentication - start'),
+  otp: {
+    length: env('otp length', 6),
+    exp: env<ms.StringValue>('otp expire in', '10m'),
+    limit: env('otp limit', 2),
+    window: env<ms.StringValue>('otp window', '10s'),
+  },
   jwt: {
     access_token: {
       secret: env('jwt access secret', genSecret()),
@@ -52,44 +60,50 @@ const config = {
     },
     reset_token: {
       secret: env('jwt reset secret', genSecret()),
-      expire_in: env<ms.StringValue>('jwt reset expire in', '10m'),
+      expire_in: env<ms.StringValue>(
+        'jwt reset expire in',
+        '10m',
+        'Authentication - end',
+        false,
+      ),
     },
   },
+
   payment: {
     stripe: {
-      secret: env('stripe secret', ''),
-      webhook: env('stripe webhook', ''),
+      secret: env(
+        'stripe secret',
+        `sk_${genSecret(16)}`,
+        'Payment credentials - start',
+      ),
+      webhook: env('stripe webhook secret', `whsec_${genSecret(16)}`),
     },
     methods: env<[string, ...string[]]>('payment methods', ['card']),
-    default_method: env('default payment method', 'card'),
-  },
-  email: {
-    user: email,
-    from: `${name} <${email}>`,
-    port: env('email port', 587),
-    host: env('email host', 'smtp.gmail.com'),
-    pass: env('email pass', ''),
-  },
-  admin: {
-    name: env('admin name', 'Mr. Admin'),
-    email: env('admin email', email),
-    password: env('admin password', genSecret(4)),
-  },
-  otp: {
-    exp: env<ms.StringValue>('otp expire in', '10m'),
-    length: env('otp length', 6),
-    limit: env('otp limit', 2),
-    window: env<ms.StringValue>('otp window', '10s'),
-  },
-  salon: {
-    default_service_duration: env<ms.StringValue>(
-      'default service duration',
-      '30m',
+    default_method: env(
+      'default payment method',
+      'card',
+      'Payment credentials - end',
+      false,
     ),
   },
+
+  email: {
+    user: env('email user', email, 'Email credentials - start'),
+    from: `${server_name} <${email}>`,
+    port: env('email port', 587),
+    host: env('email host', 'smtp.gmail.com'),
+    pass: env('email pass', '', 'Email credentials - end', false),
+  },
+
+  admin: {
+    name: env('admin name', 'Mr. Admin', 'Admin info - start'),
+    email: env('admin email', email),
+    password: env('admin password', genSecret(4), 'Admin info - end', false),
+  },
+
   ai: {
     gemini: {
-      key: env('gemini key', ''),
+      key: env('gemini key', '', 'AI credentials - start'),
     },
   },
 };
