@@ -16,25 +16,14 @@ export const createToken = (payload: JwtPayload, type: ETokenType) => {
   payload.tokenType = type;
 
   try {
-    switch (type) {
-      case ETokenType.ACCESS:
-        return jwt.sign(payload, config.jwt.access_token.secret, {
-          expiresIn: config.jwt.access_token.expire_in,
-        });
-      case ETokenType.RESET:
-        return jwt.sign(payload, config.jwt.reset_token.secret, {
-          expiresIn: config.jwt.reset_token.expire_in,
-        });
-      case ETokenType.REFRESH:
-        return jwt.sign(payload, config.jwt.refresh_token.secret, {
-          expiresIn: config.jwt.refresh_token.expire_in,
-        });
-    }
-  } catch (error) {
+    return jwt.sign(payload, config.jwt[`${type}_token`].secret, {
+      expiresIn: config.jwt[`${type}_token`].expire_in,
+    });
+  } catch (error: any) {
     errorLogger.error(colors.red('🔑 Failed to create token'), error);
     throw new ServerError(
       StatusCodes.INTERNAL_SERVER_ERROR,
-      'Failed to create token',
+      'Failed to create token ::=> ' + error.message,
     );
   }
 };
@@ -45,73 +34,25 @@ export const createToken = (payload: JwtPayload, type: ETokenType) => {
  * @param type - The type of token to verify
  * @returns The decoded token
  */
-export const verifyToken = (token: string, type: ETokenType) => {
-  if (!token || token.trim() === '')
-    throw new ServerError(StatusCodes.UNAUTHORIZED, 'Token is missing');
+export const verifyToken = (token = '', type: ETokenType) => {
+  token = token.trim();
+  if (!token)
+    throw new ServerError(StatusCodes.UNAUTHORIZED, 'You are not logged in!');
 
   try {
-    let decoded: JwtPayload;
-
-    switch (type) {
-      case ETokenType.ACCESS:
-        decoded = jwt.verify(
-          token,
-          config.jwt.access_token.secret,
-        ) as JwtPayload;
-        break;
-
-      case ETokenType.RESET:
-        decoded = jwt.verify(
-          token,
-          config.jwt.reset_token.secret,
-        ) as JwtPayload;
-        break;
-
-      case ETokenType.REFRESH:
-        decoded = jwt.verify(
-          token,
-          config.jwt.refresh_token.secret,
-        ) as JwtPayload;
-        break;
-
-      default:
-        throw new ServerError(StatusCodes.UNAUTHORIZED, 'Invalid token type');
-    }
-
-    return decoded;
+    return jwt.verify(token, config.jwt[`${type}_token`].secret) as JwtPayload;
   } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      errorLogger.warn(colors.yellow('🔑 Token expired'), error);
+    errorLogger.error(colors.red('🔑 Failed to verify token'), error);
 
-      switch (type) {
-        case ETokenType.ACCESS:
-          throw new ServerError(
-            StatusCodes.UNAUTHORIZED,
-            'Session expired. Please login again',
-          );
-        case ETokenType.RESET:
-          throw new ServerError(
-            StatusCodes.UNAUTHORIZED,
-            'Password reset link expired. Please request a new one',
-          );
-        case ETokenType.REFRESH:
-          throw new ServerError(
-            StatusCodes.UNAUTHORIZED,
-            'Your session expired. Please login again',
-          );
-      }
-    } else if (error instanceof jwt.JsonWebTokenError) {
-      errorLogger.error(colors.red('🔑 Invalid token'), error);
+    if (type === ETokenType.RESET)
       throw new ServerError(
         StatusCodes.UNAUTHORIZED,
-        'Invalid authentication. Please login again',
+        'Your password reset link has expired.',
       );
-    } else {
-      errorLogger.error(colors.red('🔑 Failed to verify token'), error);
+    else
       throw new ServerError(
         StatusCodes.UNAUTHORIZED,
-        'Authentication failed. Please login again',
+        'Your session has expired.',
       );
-    }
   }
 };

@@ -12,14 +12,14 @@ import { ETokenType } from '../modules/auth/Auth.enum';
  *
  * @param roles - The roles that are allowed to access the resource
  */
-const auth = (
-  roles: EUserRole[] = [],
-  tokenType: ETokenType = ETokenType.ACCESS,
-) =>
+const auth = (roles: EUserRole[] = [], tokenType = ETokenType.ACCESS) =>
   catchAsync(async (req, _, next) => {
+    const token =
+      req.cookies[`${tokenType}_token`] ||
+      req.headers.authorization?.split(/Bearer /i)?.[1];
+
     req.user = (await User.findById(
-      verifyToken(req.headers.authorization?.split(' ')?.[1] ?? '', tokenType)
-        .userId,
+      verifyToken(token, tokenType).userId,
     ).select('+password')) as TUser;
 
     if (
@@ -30,13 +30,14 @@ const auth = (
     )
       throw new ServerError(
         StatusCodes.FORBIDDEN,
-        'Sorry, you cannot access this resource!',
+        `Permission denied. You are not ${roles.join(' or ')}!`,
       );
 
     next();
   });
 
-auth.admin = auth.bind(null, [EUserRole.ADMIN]);
-auth.reset = auth.bind(null, [], ETokenType.RESET);
+auth.admin = () => auth([EUserRole.ADMIN]);
+auth.reset = () => auth([], ETokenType.RESET);
+auth.refresh = () => auth([], ETokenType.REFRESH);
 
 export default auth;
