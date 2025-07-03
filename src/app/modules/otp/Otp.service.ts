@@ -7,21 +7,15 @@ import User from '../user/User.model';
 import { otpGenerator } from '../../../util/crypto/otpGenerator';
 import ServerError from '../../../errors/ServerError';
 import { StatusCodes } from 'http-status-codes';
-import { Types } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { createToken } from '../auth/Auth.utils';
 import { TList } from '../query/Query.interface';
 import { TOtp } from './Otp.interface';
+import { TUser } from '../user/User.interface';
+import { EUserRole } from '../user/User.enum';
 
 export const OtpServices = {
-  async send(email: string) {
-    const user = await User.findOne({ email });
-
-    if (!user)
-      throw new ServerError(
-        StatusCodes.UNAUTHORIZED,
-        'You are not authorized.',
-      );
-
+  async send(user: TUser, type: 'resetPassword' | 'accountVerify') {
     const otp = otpGenerator(config.otp.length);
 
     await Otp.findOneAndUpdate(
@@ -36,15 +30,28 @@ export const OtpServices = {
       },
     );
 
-    await sendEmail({
-      to: email,
-      subject: `Your ${config.server.name} password reset OTP is ⚡ ${otp} ⚡.`,
-      html: OtpTemplates.reset(user?.name ?? 'Mr. ' + user.role, otp),
-    });
+    if (type === 'resetPassword')
+      await sendEmail({
+        to: user.email,
+        subject: `Your ${config.server.name} password reset OTP is ⚡ ${otp} ⚡.`,
+        html: OtpTemplates.reset({
+          userName: user?.name ?? 'Mr. ' + user.role,
+          otp,
+        }),
+      });
+    else if (type === 'accountVerify')
+      await sendEmail({
+        to: user.email,
+        subject: `Your ${config.server.name} account verification OTP is ⚡ ${otp} ⚡.`,
+        html: OtpTemplates.welcome({
+          userName: user?.name ?? 'Mr. ' + user.role,
+          otp,
+        }),
+      });
   },
 
-  async verify(user: Types.ObjectId, otp: string) {
-    const validOtp = await Otp.findOne({ user, otp });
+  async verify(userId: Types.ObjectId, otp: string) {
+    const validOtp = await Otp.findOne({ user: userId, otp });
 
     if (!validOtp)
       throw new ServerError(
@@ -54,7 +61,23 @@ export const OtpServices = {
 
     await validOtp.deleteOne();
 
-    return createToken({ userId: user }, 'reset_token');
+    return createToken({ userId }, 'reset_token');
+  },
+
+  async verifyAccount(user: TUser & Document, otp: string) {
+    const validOtp = await Otp.findOne({ user: user._id, otp });
+
+    if (!validOtp)
+      throw new ServerError(
+        StatusCodes.UNAUTHORIZED,
+        'Your credentials are incorrect.',
+      );
+
+    await validOtp.deleteOne();
+
+    if (user.role === EUserRole.GUEST) user.role = EUserRole.USER;
+
+    return user.save();
   },
 
   async list({ page, limit, email }: TList & { email: string }) {

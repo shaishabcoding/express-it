@@ -21,7 +21,7 @@ const userSchema = new Schema<TUser>(
     role: {
       type: String,
       enum: Object.values(EUserRole),
-      default: EUserRole.USER,
+      default: EUserRole.GUEST,
     },
     phone: {
       type: String,

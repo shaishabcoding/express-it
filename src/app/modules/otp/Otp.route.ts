@@ -11,17 +11,25 @@ import { UserMiddlewares } from '../user/User.middleware';
 const user = Router();
 
 user.post(
-  '/send',
+  '/send/reset-password',
   otpLimiter,
   purifyRequest(OtpValidations.send),
+  UserMiddlewares.useUser(),
   OtpControllers.send,
 );
 
 user.post(
-  '/verify',
+  '/verify/reset-password',
   purifyRequest(OtpValidations.verify),
   UserMiddlewares.useUser(),
   OtpControllers.verify,
+);
+
+user.post(
+  '/verify/account',
+  purifyRequest(OtpValidations.verify),
+  UserMiddlewares.useUser(),
+  OtpControllers.verifyAccount,
 );
 
 /** Admin routes */

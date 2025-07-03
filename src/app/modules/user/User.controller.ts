@@ -3,10 +3,18 @@ import catchAsync from '../../../util/server/catchAsync';
 import serveResponse from '../../../util/server/serveResponse';
 import { StatusCodes } from 'http-status-codes';
 import { AuthServices } from '../auth/Auth.service';
+import { OtpServices } from '../otp/Otp.service';
+import { errorLogger } from '../../../util/logger/logger';
 
 export const UserControllers = {
   create: catchAsync(async ({ body }, res) => {
     const user = await UserServices.create(body);
+
+    try {
+      await OtpServices.send(user, 'accountVerify');
+    } catch (error) {
+      errorLogger.error(error);
+    }
 
     const { access_token, refresh_token } = await AuthServices.retrieveToken(
       user._id!,

@@ -13,14 +13,15 @@ import { useSession } from '../../../util/db/session';
 export const UserServices = {
   async create(userData: TUser & TAuth) {
     return useSession(async session => {
-      const hasUser = await User.exists({ email: userData.email }).session(
-        session,
-      );
+      let user = await User.findOne({ email: userData.email }).session(session);
 
-      if (hasUser)
-        throw new ServerError(StatusCodes.CONFLICT, 'User already exists');
+      if (user)
+        throw new ServerError(
+          StatusCodes.CONFLICT,
+          `${user.role.toCapitalize()} already exists!`,
+        );
 
-      const [user] = await User.create([userData], { session });
+      [user] = await User.create([userData], { session });
 
       await Auth.create(
         [

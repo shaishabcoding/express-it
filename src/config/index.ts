@@ -39,7 +39,8 @@ const config = {
       success: env('payment success url', `/payment/success`),
       cancel: env('payment cancel url', `/payment/cancel`),
     },
-    api_doc: env('api doc', '', 'Url info - end', false),
+    api_doc: env('api doc', ''),
+    ui: env('ui url', '', 'Url info - end', false),
   },
 
   bcrypt_salt_rounds: env('bcrypt salt rounds', 10, 'Authentication - start'),
@@ -92,7 +93,8 @@ const config = {
     from: `${server_name} <${email}>`,
     port: env('email port', 587),
     host: env('email host', 'smtp.gmail.com'),
-    pass: env('email pass', '', 'Email credentials - end', false),
+    pass: env('email pass', ''),
+    support: env('email support', email, 'Email credentials - end', false),
   },
 
   admin: {

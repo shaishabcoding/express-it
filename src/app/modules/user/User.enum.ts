@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 export enum EUserRole {
+  GUEST = 'guest',
   USER = 'user',
   ADMIN = 'admin',
 }
