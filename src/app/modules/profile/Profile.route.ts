@@ -4,6 +4,7 @@ import auth from '../../middlewares/auth';
 import { UserValidations } from '../user/User.validation';
 import { UserControllers } from '../user/User.controller';
 import capture from '../../middlewares/capture';
+import { AuthControllers } from '../auth/Auth.controller';
 
 const router = Router();
 
@@ -25,8 +26,8 @@ router.patch(
 router.patch(
   '/change-password',
   auth(),
-  purifyRequest(UserValidations.cngPass),
-  UserControllers.changePassword,
+  purifyRequest(UserValidations.changePassword),
+  AuthControllers.changePassword,
 );
 
 export const ProfileRoutes = router;

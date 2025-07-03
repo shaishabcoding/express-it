@@ -54,7 +54,7 @@ export const UserValidations = {
     }),
   }),
 
-  cngPass: z.object({
+  changePassword: z.object({
     body: z.object({
       oldPassword: z
         .string({

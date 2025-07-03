@@ -18,7 +18,7 @@ export const UserControllers = {
       statusCode: StatusCodes.CREATED,
       message: `${user.role.toCapitalize() ?? 'User'} registered successfully!`,
       data: {
-        token: access_token,
+        access_token,
         user,
       },
     });

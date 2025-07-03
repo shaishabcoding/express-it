@@ -5,16 +5,16 @@ import serveResponse from '../../../util/server/serveResponse';
 
 export const AuthControllers = {
   login: catchAsync(async (req, res) => {
-    const { accessToken, refreshToken, user } = await AuthServices.login(
-      req.user!,
+    const { access_token, refresh_token, user } = await AuthServices.login(
+      req.user!._id!,
       req.body.password,
     );
 
-    AuthServices.setRefreshToken(res, refreshToken);
+    AuthServices.setTokens(res, { access_token, refresh_token });
 
     serveResponse(res, {
       message: 'Login successfully!',
-      data: { token: accessToken, user },
+      data: { access_token, user },
     });
   }),
 
@@ -23,11 +23,12 @@ export const AuthControllers = {
       res.clearCookie(cookie, {
         httpOnly: true,
         secure: !config.server.isDevelopment,
+        maxAge: 0, // expire immediately
       }),
     );
 
     serveResponse(res, {
-      message: 'Logged out successfully',
+      message: 'Logged out successfully!',
     });
   }),
 
@@ -40,18 +41,18 @@ export const AuthControllers = {
   }),
 
   refreshToken: catchAsync(async ({ cookies }, res) => {
-    const { accessToken } = await AuthServices.refreshToken(
+    const { access_token } = await AuthServices.refreshToken(
       cookies.refreshToken,
     );
 
     serveResponse(res, {
       message: 'AccessToken generated successfully!',
-      data: { token: accessToken },
+      data: { access_token },
     });
   }),
 
   changePassword: catchAsync(async ({ user, body }, res) => {
-    await UserServices.changePassword(user as any, body);
+    await AuthServices.changePassword(user as any, body);
 
     serveResponse(res, {
       message: 'Password changed successfully!',
