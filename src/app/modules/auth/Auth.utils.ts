@@ -5,6 +5,7 @@ import { StatusCodes } from 'http-status-codes';
 import { errorLogger } from '../../../util/logger/logger';
 import colors from 'colors';
 import { ETokenType } from './Auth.enum';
+import bcrypt from 'bcryptjs';
 
 /**
  * Create a token
@@ -55,4 +56,13 @@ export const verifyToken = (token = '', type: ETokenType) => {
         'Your session has expired.',
       );
   }
+};
+
+export const hashPassword = async (password: string) => {
+  const salt = await bcrypt.genSalt(config.bcrypt_salt_rounds);
+  return bcrypt.hash(password, salt);
+};
+
+export const verifyPassword = async (password: string, hash: string) => {
+  return bcrypt.compare(password, hash);
 };

@@ -57,14 +57,6 @@ export const UserControllers = {
     });
   }),
 
-  changePassword: catchAsync(async ({ user, body }, res) => {
-    await UserServices.changePassword(user as any, body);
-
-    serveResponse(res, {
-      message: 'Password changed successfully!',
-    });
-  }),
-
   list: catchAsync(async (req, res) => {
     const { meta, users } = await UserServices.list(req.query);
 

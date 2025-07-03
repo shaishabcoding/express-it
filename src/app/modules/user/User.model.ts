@@ -1,6 +1,5 @@
 import { model, Schema } from 'mongoose';
 import { TUser } from './User.interface';
-import { UserMiddlewares } from './User.middleware';
 import { EUserGender, EUserRole } from './User.enum';
 import config from '../../../config';
 
@@ -33,8 +32,6 @@ const userSchema = new Schema<TUser>(
     versionKey: false,
   },
 );
-
-userSchema.inject(UserMiddlewares.schema);
 
 const User = model<TUser>('User', userSchema);
 

@@ -49,4 +49,12 @@ export const AuthControllers = {
       data: { token: accessToken },
     });
   }),
+
+  changePassword: catchAsync(async ({ user, body }, res) => {
+    await UserServices.changePassword(user as any, body);
+
+    serveResponse(res, {
+      message: 'Password changed successfully!',
+    });
+  }),
 };

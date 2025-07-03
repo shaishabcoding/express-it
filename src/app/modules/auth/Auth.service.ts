@@ -1,21 +1,23 @@
 import User from '../user/User.model';
 import bcrypt from 'bcryptjs';
-import { createToken, verifyToken } from './Auth.utils';
+import { createToken, verifyPassword, verifyToken } from './Auth.utils';
 import { StatusCodes } from 'http-status-codes';
 import ServerError from '../../../errors/ServerError';
-import { Document, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import config from '../../../config';
 import { Response } from 'express';
 import { userExcludeFields } from '../user/User.constant';
-import { TUser } from '../user/User.interface';
 import { ETokenType } from './Auth.enum';
+import Auth from './Auth.model';
 
 export const AuthServices = {
-  async login(user: TUser, password: string) {
-    if (!(await bcrypt.compare(password, user.password!)))
+  async login(userId: Types.ObjectId, password: string) {
+    const auth = await Auth.findOne({ user: userId });
+
+    if (!(await bcrypt.compare(password, auth!.password)))
       throw new ServerError(StatusCodes.UNAUTHORIZED, 'You are not authorized');
 
-    return this.retrieveToken(user._id!);
+    return this.retrieveToken(userId);
   },
 
   async setRefreshToken(res: Response, refreshToken: string) {
@@ -26,10 +28,22 @@ export const AuthServices = {
     });
   },
 
-  async resetPassword(user: TUser & Document, password: string) {
-    user.password = password;
+  async resetPassword(userId: Types.ObjectId, password: string) {
+    return Auth.updateOne({ user: userId }, { password });
+  },
 
-    return user.save();
+  async changePassword(userId: Types.ObjectId, password: string) {
+    const auth = (await Auth.findOne({ user: userId }))!;
+
+    if (await verifyPassword(password, auth.password))
+      throw new ServerError(
+        StatusCodes.UNAUTHORIZED,
+        'Your credentials are incorrect.',
+      );
+
+    auth.password = password;
+
+    return auth.save();
   },
 
   async refreshToken(refreshToken: string) {
