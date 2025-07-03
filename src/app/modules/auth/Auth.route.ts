@@ -14,7 +14,7 @@ const router = express.Router();
 router.post(
   '/register',
   capture({ avatar: { maxCount: 1, size: 5 * 1024 * 1024 } }),
-  purifyRequest(UserValidations.createUser),
+  purifyRequest(UserValidations.create, UserValidations.edit),
   UserControllers.create,
 );
 

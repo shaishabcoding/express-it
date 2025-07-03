@@ -4,13 +4,8 @@ import { date } from '../../../util/transform/date';
 import { lower } from '../../../util/transform/lower';
 
 export const UserValidations = {
-  createUser: z.object({
+  create: z.object({
     body: z.object({
-      name: z
-        .string({
-          required_error: 'Name is missing',
-        })
-        .min(1, 'Name is missing'),
       email: z
         .string({
           required_error: 'Email is missing',
@@ -21,22 +16,6 @@ export const UserValidations = {
           required_error: 'Password is missing',
         })
         .min(6, 'Password must be at least 6 characters long'),
-      avatar: z
-        .string({
-          required_error: 'Upload an avatar',
-        })
-        .min(1, 'Upload an avatar'),
-      phone: z
-        .string({
-          required_error: 'Phone number is missing',
-        })
-        .min(1, 'Phone number is missing'),
-      gender: z.string().transform(lower).pipe(z.nativeEnum(EUserGender)),
-      birthDate: z
-        .string({
-          required_error: 'Birth date is missing',
-        })
-        .transform(date),
     }),
   }),
 

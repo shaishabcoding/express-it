@@ -8,6 +8,7 @@ import config from '../../../config';
 import { Response } from 'express';
 import { ETokenType } from './Auth.enum';
 import Auth from './Auth.model';
+import ms from 'ms';
 
 export const AuthServices = {
   async login(userId: Types.ObjectId, password: string) {
@@ -19,13 +20,11 @@ export const AuthServices = {
     return this.retrieveToken(userId);
   },
 
-  setTokens(res: Response, tokens: Record<string, string>) {
+  setTokens(res: Response, tokens: Record<keyof typeof config.jwt, string>) {
     Object.entries(tokens).forEach(([key, value]) =>
       res.cookie(key, value, {
         secure: !config.server.isDevelopment,
-        maxAge:
-          verifyToken(value, key.replace('_token', '') as ETokenType).exp! *
-          1000,
+        maxAge: ms(config.jwt[key as keyof typeof config.jwt].expire_in),
         httpOnly: true,
       }),
     );

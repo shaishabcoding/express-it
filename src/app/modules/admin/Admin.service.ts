@@ -2,7 +2,10 @@ import colors from 'colors';
 import { errorLogger } from '../../../util/logger/logger';
 import User from '../user/User.model';
 import { logger } from '../../../util/logger/logger';
-import { adminData } from './Admin.constant';
+import { useSession } from '../../../util/db/session';
+import Auth from '../auth/Auth.model';
+import config from '../../../config';
+import { EUserRole } from '../user/User.enum';
 
 export const AdminServices = {
   /**
@@ -13,18 +16,32 @@ export const AdminServices = {
    * Otherwise, it creates a new admin user with the provided admin data.
    */
   async seed() {
+    const adminData = config.admin;
     try {
-      const hasAdmin = await User.exists({
-        email: adminData.email,
+      return useSession(async session => {
+        let admin = await User.exists({
+          email: adminData.email,
+        }).session(session);
+
+        if (admin) return;
+
+        logger.info(colors.green('🔑 admin creation started...'));
+
+        [admin] = await User.create([{ ...adminData, role: EUserRole.ADMIN }], {
+          session,
+        });
+        await Auth.create(
+          [
+            {
+              user: admin._id,
+              password: adminData.password,
+            },
+          ],
+          { session },
+        );
+
+        logger.info(colors.green('✔ admin created successfully!'));
       });
-
-      if (hasAdmin) return;
-
-      logger.info(colors.green('🔑 admin creation started...'));
-
-      await User.create(adminData);
-
-      logger.info(colors.green('✔ admin created successfully!'));
     } catch (error) {
       errorLogger.error(colors.red('❌ admin creation failed!'), error);
     }
