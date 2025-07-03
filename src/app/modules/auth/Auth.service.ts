@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import User from '../user/User.model';
 import bcrypt from 'bcryptjs';
 import { createToken, verifyPassword, verifyToken } from './Auth.utils';
@@ -15,12 +16,15 @@ export const AuthServices = {
     const auth = await Auth.findOne({ user: userId });
 
     if (!(await bcrypt.compare(password, auth!.password)))
-      throw new ServerError(StatusCodes.UNAUTHORIZED, 'You are not authorized');
+      throw new ServerError(
+        StatusCodes.UNAUTHORIZED,
+        'Your credentials are incorrect.',
+      );
 
     return this.retrieveToken(userId);
   },
 
-  setTokens(res: Response, tokens: Partial<Record<TToken, string>>) {
+  setTokens(res: Response, tokens: { [key in TToken]?: string }) {
     Object.entries(tokens).forEach(([key, value]) =>
       res.cookie(key, value, {
         secure: !config.server.isDevelopment,

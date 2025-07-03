@@ -4,10 +4,10 @@ import config from '../../../config';
 import serveResponse from '../../../util/server/serveResponse';
 
 export const AuthControllers = {
-  login: catchAsync(async (req, res) => {
-    const { access_token, refresh_token, user } = await AuthServices.login(
-      req.user!._id!,
-      req.body.password,
+  login: catchAsync(async ({ user, body }, res) => {
+    const { access_token, refresh_token } = await AuthServices.login(
+      user!._id!,
+      body.password,
     );
 
     AuthServices.setTokens(res, { access_token, refresh_token });

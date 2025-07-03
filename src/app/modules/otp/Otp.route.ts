@@ -3,9 +3,9 @@ import purifyRequest from '../../middlewares/purifyRequest';
 import { OtpValidations } from './Otp.validation';
 import { otpLimiter } from './Otp.utils';
 import { OtpControllers } from './Otp.controller';
-import { temUser } from '../../middlewares/temUser';
 import config from '../../../config';
 import { QueryValidations } from '../query/Query.validation';
+import { UserMiddlewares } from '../user/User.middleware';
 
 /** User routes */
 const user = Router();
@@ -20,7 +20,7 @@ user.post(
 user.post(
   '/verify',
   purifyRequest(OtpValidations.verify),
-  temUser(),
+  UserMiddlewares.useUser(),
   OtpControllers.verify,
 );
 
