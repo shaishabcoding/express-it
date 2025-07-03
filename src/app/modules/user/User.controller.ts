@@ -2,43 +2,23 @@ import { UserServices } from './User.service';
 import catchAsync from '../../../util/server/catchAsync';
 import serveResponse from '../../../util/server/serveResponse';
 import { StatusCodes } from 'http-status-codes';
-import { userExcludeFields } from './User.constant';
 import { AuthServices } from '../auth/Auth.service';
 
 export const UserControllers = {
   create: catchAsync(async ({ body }, res) => {
     const user = await UserServices.create(body);
 
-    const { accessToken, refreshToken } = await AuthServices.retrieveToken(
+    const { access_token, refresh_token } = await AuthServices.retrieveToken(
       user._id!,
     );
 
-    AuthServices.setRefreshToken(res, refreshToken);
+    AuthServices.setTokens(res, { access_token, refresh_token });
 
     serveResponse(res, {
       statusCode: StatusCodes.CREATED,
-      message: `User registered successfully!`,
+      message: `${user.role.toCapitalize() ?? 'User'} registered successfully!`,
       data: {
-        token: accessToken,
-        user,
-      },
-    });
-  }),
-
-  createHost: catchAsync(async ({ body }, res) => {
-    const user = await UserServices.create(body);
-
-    const { accessToken, refreshToken } = await AuthServices.retrieveToken(
-      user._id!,
-    );
-
-    AuthServices.setRefreshToken(res, refreshToken);
-
-    serveResponse(res, {
-      statusCode: StatusCodes.CREATED,
-      message: `Host registered successfully!`,
-      data: {
-        token: accessToken,
+        token: access_token,
         user,
       },
     });
@@ -67,11 +47,9 @@ export const UserControllers = {
     });
   }),
 
-  me: catchAsync(({ user }: any, res) => {
-    userExcludeFields.forEach(field => (user[field] = undefined));
-
+  me: catchAsync(({ user }, res) => {
     serveResponse(res, {
-      message: 'Profile fetched successfully!',
+      message: 'Profile retrieved successfully!',
       data: user,
     });
   }),

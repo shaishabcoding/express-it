@@ -4,7 +4,6 @@ import User from './User.model';
 import { StatusCodes } from 'http-status-codes';
 import deleteFile from '../../../util/file/deleteFile';
 import ServerError from '../../../errors/ServerError';
-import { userExcludeFields } from './User.constant';
 import { Types } from 'mongoose';
 import { TList } from '../query/Query.interface';
 import Auth from '../auth/Auth.model';
@@ -40,7 +39,7 @@ export const UserServices = {
   async edit(user: TUser & { oldAvatar: string }) {
     const updatedUser = await User.findByIdAndUpdate(user!._id, user, {
       new: true,
-    }).select('-' + userExcludeFields.join(' -'));
+    });
 
     if (user.avatar) await deleteFile(user.oldAvatar);
 
@@ -58,7 +57,6 @@ export const UserServices = {
       ];
 
     const users = await User.find(filter)
-      .select('-' + userExcludeFields.join(' -'))
       .skip((page - 1) * limit)
       .limit(limit);
 
@@ -78,10 +76,13 @@ export const UserServices = {
   },
 
   async delete(userId: Types.ObjectId) {
-    const user = await User.findByIdAndDelete(userId);
+    return useSession(async session => {
+      const user = await User.findByIdAndDelete(userId).session(session);
+      await Auth.findOneAndDelete({ user: userId }).session(session);
 
-    if (user?.avatar) await deleteFile(user.avatar);
+      if (user?.avatar) await deleteFile(user.avatar);
 
-    return user;
+      return user;
+    });
   },
 };

@@ -6,7 +6,6 @@ import ServerError from '../../../errors/ServerError';
 import { Types } from 'mongoose';
 import config from '../../../config';
 import { Response } from 'express';
-import { userExcludeFields } from '../user/User.constant';
 import { ETokenType } from './Auth.enum';
 import Auth from './Auth.model';
 
@@ -20,12 +19,16 @@ export const AuthServices = {
     return this.retrieveToken(userId);
   },
 
-  async setRefreshToken(res: Response, refreshToken: string) {
-    res.cookie('refreshToken', refreshToken, {
-      secure: !config.server.isDevelopment,
-      maxAge: verifyToken(refreshToken, ETokenType.REFRESH).exp! * 1000,
-      httpOnly: true,
-    });
+  setTokens(res: Response, tokens: Record<string, string>) {
+    Object.entries(tokens).forEach(([key, value]) =>
+      res.cookie(key, value, {
+        secure: !config.server.isDevelopment,
+        maxAge:
+          verifyToken(value, key.replace('_token', '') as ETokenType).exp! *
+          1000,
+        httpOnly: true,
+      }),
+    );
   },
 
   async resetPassword(userId: Types.ObjectId, password: string) {
@@ -62,13 +65,10 @@ export const AuthServices = {
   },
 
   async retrieveToken(userId: Types.ObjectId) {
-    const accessToken = createToken({ userId }, ETokenType.ACCESS);
-    const refreshToken = createToken({ userId }, ETokenType.REFRESH);
-
-    const userData = await User.findById(userId)
-      .select('-' + userExcludeFields.join(' -'))
-      .lean();
-
-    return { accessToken, user: userData, refreshToken };
+    return {
+      access_token: createToken({ userId }, ETokenType.ACCESS),
+      refresh_token: createToken({ userId }, ETokenType.REFRESH),
+      user: await User.findById(userId).lean(),
+    };
   },
 };
