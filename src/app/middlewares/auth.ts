@@ -5,14 +5,14 @@ import { verifyToken } from '../modules/auth/Auth.utils';
 import catchAsync from '../../util/server/catchAsync';
 import { EUserRole } from '../modules/user/User.enum';
 import { TUser } from '../modules/user/User.interface';
-import { ETokenType } from '../modules/auth/Auth.enum';
+import { TToken } from '../modules/auth/Auth.interface';
 
 /**
  * Middleware to authenticate and authorize requests based on user roles
  *
  * @param roles - The roles that are allowed to access the resource
  */
-const auth = (roles: EUserRole[] = [], tokenType = ETokenType.ACCESS) =>
+const auth = (roles: EUserRole[] = [], tokenType: TToken = 'access_token') =>
   catchAsync(async (req, _, next) => {
     const token =
       req.cookies[`${tokenType}_token`] ||
@@ -37,7 +37,7 @@ const auth = (roles: EUserRole[] = [], tokenType = ETokenType.ACCESS) =>
   });
 
 auth.admin = () => auth([EUserRole.ADMIN]);
-auth.reset = () => auth([], ETokenType.RESET);
-auth.refresh = () => auth([], ETokenType.REFRESH);
+auth.reset = () => auth([], 'reset_token');
+auth.refresh = () => auth([], 'refresh_token');
 
 export default auth;

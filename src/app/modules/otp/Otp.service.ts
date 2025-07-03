@@ -9,7 +9,6 @@ import ServerError from '../../../errors/ServerError';
 import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
 import { createToken } from '../auth/Auth.utils';
-import { ETokenType } from '../auth/Auth.enum';
 import { TList } from '../query/Query.interface';
 import { TOtp } from './Otp.interface';
 
@@ -55,7 +54,7 @@ export const OtpServices = {
 
     await validOtp.deleteOne();
 
-    return createToken({ userId: user }, ETokenType.RESET);
+    return createToken({ userId: user }, 'reset_token');
   },
 
   async list({ page, limit, email }: TList & { email: string }) {

@@ -6,9 +6,9 @@ import ServerError from '../../../errors/ServerError';
 import { Types } from 'mongoose';
 import config from '../../../config';
 import { Response } from 'express';
-import { ETokenType } from './Auth.enum';
 import Auth from './Auth.model';
 import ms from 'ms';
+import { TToken } from './Auth.interface';
 
 export const AuthServices = {
   async login(userId: Types.ObjectId, password: string) {
@@ -20,11 +20,11 @@ export const AuthServices = {
     return this.retrieveToken(userId);
   },
 
-  setTokens(res: Response, tokens: Record<keyof typeof config.jwt, string>) {
+  setTokens(res: Response, tokens: Partial<Record<TToken, string>>) {
     Object.entries(tokens).forEach(([key, value]) =>
       res.cookie(key, value, {
         secure: !config.server.isDevelopment,
-        maxAge: ms(config.jwt[key as keyof typeof config.jwt].expire_in),
+        maxAge: ms(config.jwt[key as TToken].expire_in),
         httpOnly: true,
       }),
     );
@@ -54,7 +54,7 @@ export const AuthServices = {
     if (!token)
       throw new ServerError(StatusCodes.UNAUTHORIZED, 'You are not logged in!');
 
-    const { userId } = verifyToken(token, ETokenType.REFRESH);
+    const { userId } = verifyToken(token, 'refresh_token');
 
     const user = await User.findById(userId).select('_id');
 
@@ -65,8 +65,8 @@ export const AuthServices = {
 
   async retrieveToken(userId: Types.ObjectId) {
     return {
-      access_token: createToken({ userId }, ETokenType.ACCESS),
-      refresh_token: createToken({ userId }, ETokenType.REFRESH),
+      access_token: createToken({ userId }, 'access_token'),
+      refresh_token: createToken({ userId }, 'refresh_token'),
       user: await User.findById(userId).lean(),
     };
   },

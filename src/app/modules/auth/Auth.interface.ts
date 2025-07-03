@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import config from '../../../config';
 
 export type TAuth = {
   _id: Types.ObjectId;
@@ -6,3 +7,5 @@ export type TAuth = {
   user: Types.ObjectId;
   password: string;
 };
+
+export type TToken = keyof typeof config.jwt;
