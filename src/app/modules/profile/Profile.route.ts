@@ -11,7 +11,13 @@ router.get('/', auth(), UserControllers.me);
 
 router.patch(
   '/edit',
-  capture(),
+  capture({
+    avatar: {
+      maxCount: 1,
+      size: 5 * 1024 * 1024,
+      default: null,
+    },
+  }),
   purifyRequest(UserValidations.edit),
   UserControllers.edit,
 );

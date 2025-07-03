@@ -23,16 +23,22 @@ mongoose.connection.on('connected', () => {
  */
 const capture = (fields: {
   [field: string]: {
-    default?: string | string[];
+    default?: string | string[] | null;
     maxCount?: number;
     size?: number;
   };
 }) =>
   catchAsync(async (req, res, next) => {
     Object.keys(fields).forEach(field => {
-      fields[field].default ??= config.server.default_avatar;
       fields[field].maxCount ??= 5;
       fields[field].size ??= 5;
+      if (fields[field].default === undefined)
+        fields[field].default = config.server.default_avatar;
+      else if (
+        Array.isArray(fields[field].default) &&
+        fields[field].default[0] === undefined
+      )
+        fields[field].default = [config.server.default_avatar];
     });
 
     try {
@@ -172,7 +178,7 @@ const fileFilter = (
 
 const upload = (fields: {
   [field: string]: {
-    default?: string | string[];
+    default?: string | string[] | null;
     maxCount?: number;
     size?: number;
   };
@@ -181,7 +187,6 @@ const upload = (fields: {
     Object.keys(fields).map(field => ({
       name: field,
       maxCount: fields[field].maxCount || undefined,
-      default: fields[field].default,
       size: (fields[field].size || 5) * 1024 * 1024,
     })),
   );

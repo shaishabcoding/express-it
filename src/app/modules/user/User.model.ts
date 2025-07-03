@@ -12,11 +12,6 @@ const userSchema = new Schema<TUser>(
       required: true,
       unique: true,
     },
-    password: {
-      type: String,
-      required: true,
-      select: false,
-    },
     avatar: {
       type: String,
       default: config.server.default_avatar,

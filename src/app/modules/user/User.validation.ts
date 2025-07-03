@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { EUserGender, EUserRole } from './User.enum';
+import { EUserGender } from './User.enum';
 import { date } from '../../../util/transform/date';
 import { lower } from '../../../util/transform/lower';
 
@@ -37,7 +37,6 @@ export const UserValidations = {
           required_error: 'Birth date is missing',
         })
         .transform(date),
-      role: z.literal(EUserRole.USER).default(EUserRole.USER),
     }),
   }),
 
