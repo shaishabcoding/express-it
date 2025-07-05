@@ -7,7 +7,7 @@ export const MessageControllers = {
     const { messages, meta } = await MessageServices.list({
       ...query,
       chat: params.chatId,
-      user: user!._id!,
+      user: user._id,
     });
 
     serveResponse(res, {

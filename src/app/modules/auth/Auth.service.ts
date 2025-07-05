@@ -27,11 +27,20 @@ export const AuthServices = {
   setTokens(res: Response, tokens: { [key in TToken]?: string }) {
     Object.entries(tokens).forEach(([key, value]) =>
       res.cookie(key, value, {
+        httpOnly: true,
         secure: !config.server.isDevelopment,
         maxAge: ms(config.jwt[key as TToken].expire_in),
-        httpOnly: true,
       }),
     );
+  },
+
+  destroyTokens(res: Response, cookies: TToken[]) {
+    for (const cookie of cookies)
+      res.clearCookie(cookie as TToken, {
+        httpOnly: true,
+        secure: !config.server.isDevelopment,
+        maxAge: 0, // expire immediately
+      });
   },
 
   async resetPassword(userId: Types.ObjectId, password: string) {

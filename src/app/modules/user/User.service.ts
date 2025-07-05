@@ -4,11 +4,13 @@ import User from './User.model';
 import { StatusCodes } from 'http-status-codes';
 import deleteFile from '../../../util/file/deleteFile';
 import ServerError from '../../../errors/ServerError';
-import { Types } from 'mongoose';
+import { RootFilterQuery, Types } from 'mongoose';
 import { TList } from '../query/Query.interface';
 import Auth from '../auth/Auth.model';
 import { TAuth } from '../auth/Auth.interface';
 import { useSession } from '../../../util/db/session';
+import { Request } from 'express';
+import { userSearchableFields as searchFields } from './User.constant';
 
 export const UserServices = {
   async create(userData: TUser & TAuth) {
@@ -37,25 +39,26 @@ export const UserServices = {
     });
   },
 
-  async edit(user: TUser & { oldAvatar: string }) {
-    const updatedUser = await User.findByIdAndUpdate(user!._id, user, {
-      new: true,
-    });
+  async edit({ user, body }: Request) {
+    Object.assign(user, body);
 
-    if (user.avatar) await deleteFile(user.oldAvatar);
+    await user.save();
 
-    return updatedUser;
+    if (body.avatar && user.avatar) await deleteFile(user.avatar);
+
+    return user;
   },
 
   async list({ page, limit, search }: TList) {
-    const filter: any = {};
+    const filter: RootFilterQuery<TUser> = {};
 
     if (search)
-      filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { phone: { $regex: search, $options: 'i' } },
-      ];
+      filter.$or = searchFields.map(field => ({
+        [field]: {
+          $regex: search,
+          $options: 'i',
+        },
+      }));
 
     const users = await User.find(filter)
       .skip((page - 1) * limit)

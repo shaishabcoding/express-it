@@ -6,7 +6,7 @@ import { ChatServices } from './Chat.service';
 
 export const ChatControllers = {
   create: catchAsync(async ({ user, params }, res) => {
-    const data = await ChatServices.create([user!._id!, params.userId]);
+    const data = await ChatServices.create([user._id, params.userId]);
 
     serveResponse(res, {
       message: 'Chat resolved successfully!',
@@ -15,7 +15,7 @@ export const ChatControllers = {
   }),
 
   list: catchAsync(async ({ query, user }, res) => {
-    const { chats, meta } = await ChatServices.list(query, user!._id!);
+    const { chats, meta } = await ChatServices.list(query, user._id);
 
     serveResponse(res, {
       message: 'Chats retrieved successfully!',
@@ -25,7 +25,7 @@ export const ChatControllers = {
   }),
 
   delete: catchAsync(async ({ user, params }, res) => {
-    const message = await ChatServices.delete(params.chatId, user!._id!);
+    const message = await ChatServices.delete(params.chatId, user._id);
 
     if (!message)
       throw new ServerError(

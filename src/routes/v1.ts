@@ -1,12 +1,11 @@
 import { Router } from 'express';
 import auth from '../app/middlewares/auth';
-import { TRoute } from '../types/route.types';
 import AdminRoutes from '../app/modules/admin/Admin.route';
 import { AuthRoutes } from '../app/modules/auth/Auth.route';
-import { ProfileRoutes } from '../app/modules/profile/Profile.route';
 import { ChatRoutes } from '../app/modules/chat/Chat.route';
+import { UserRoutes } from '../app/modules/user/User.route';
 
-const routes: TRoute[] = [
+export default Router().inject([
   {
     path: '/auth',
     route: AuthRoutes,
@@ -14,7 +13,7 @@ const routes: TRoute[] = [
   {
     path: '/profile',
     middlewares: [auth()],
-    route: ProfileRoutes,
+    route: UserRoutes.user,
   },
   {
     path: '/chats',
@@ -26,6 +25,4 @@ const routes: TRoute[] = [
     middlewares: [auth.admin()],
     route: AdminRoutes,
   },
-];
-
-export default Router().inject(routes);
+]);

@@ -1,12 +1,12 @@
 import { AuthServices } from './Auth.service';
 import catchAsync from '../../../util/server/catchAsync';
-import config from '../../../config';
 import serveResponse from '../../../util/server/serveResponse';
+import { TToken } from './Auth.interface';
 
 export const AuthControllers = {
   login: catchAsync(async ({ user, body }, res) => {
     const { access_token, refresh_token } = await AuthServices.login(
-      user!._id!,
+      user._id,
       body.password,
     );
 
@@ -18,14 +18,8 @@ export const AuthControllers = {
     });
   }),
 
-  logout: catchAsync(async (req, res) => {
-    Object.keys(req.cookies).forEach(cookie =>
-      res.clearCookie(cookie, {
-        httpOnly: true,
-        secure: !config.server.isDevelopment,
-        maxAge: 0, // expire immediately
-      }),
-    );
+  logout: catchAsync(async ({ cookies }, res) => {
+    AuthServices.destroyTokens(res, Object.keys(cookies) as TToken[]);
 
     serveResponse(res, {
       message: 'Logged out successfully!',
@@ -34,6 +28,8 @@ export const AuthControllers = {
 
   resetPassword: catchAsync(async ({ body, user }, res) => {
     await AuthServices.resetPassword(user as any, body.password);
+
+    AuthServices.destroyTokens(res, ['reset_token']);
 
     serveResponse(res, {
       message: 'Password reset successfully!',

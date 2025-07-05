@@ -4,7 +4,6 @@ import User from '../modules/user/User.model';
 import { verifyToken } from '../modules/auth/Auth.utils';
 import catchAsync from '../../util/server/catchAsync';
 import { EUserRole } from '../modules/user/User.enum';
-import { TUser } from '../modules/user/User.interface';
 import { TToken } from '../modules/auth/Auth.interface';
 
 /**
@@ -15,12 +14,10 @@ import { TToken } from '../modules/auth/Auth.interface';
 const auth = (roles: EUserRole[] = [], tokenType: TToken = 'access_token') =>
   catchAsync(async (req, _, next) => {
     const token =
-      req.cookies[`${tokenType}_token`] ||
+      req.cookies[tokenType] ||
       req.headers.authorization?.split(/Bearer /i)?.[1];
 
-    req.user = (await User.findById(
-      verifyToken(token, tokenType).userId,
-    ).select('+password')) as TUser;
+    req.user = (await User.findById(verifyToken(token, tokenType).userId))!;
 
     if (
       !req.user ||
@@ -39,5 +36,6 @@ const auth = (roles: EUserRole[] = [], tokenType: TToken = 'access_token') =>
 auth.admin = () => auth([EUserRole.ADMIN]);
 auth.reset = () => auth([], 'reset_token');
 auth.refresh = () => auth([], 'refresh_token');
+auth.user = () => auth([EUserRole.USER, EUserRole.ADMIN]);
 
 export default auth;

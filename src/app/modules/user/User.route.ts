@@ -2,23 +2,10 @@ import { Router } from 'express';
 import { UserControllers } from './User.controller';
 import purifyRequest from '../../middlewares/purifyRequest';
 import { QueryValidations } from '../query/Query.validation';
-import { TRoute } from '../../../types/route.types';
-import { ProfileRoutes } from '../profile/Profile.route';
-import { ChatRoutes } from '../chat/Chat.route';
 import { UserValidations } from './User.validation';
 import User from './User.model';
-
-/** User Routes */
-const userRoutes: TRoute[] = [
-  {
-    path: '/profile',
-    route: ProfileRoutes,
-  },
-  {
-    path: '/chats',
-    route: ChatRoutes,
-  },
-];
+import capture from '../../middlewares/capture';
+import { AuthControllers } from '../auth/Auth.controller';
 
 /** Admin Routes */
 const admin = Router();
@@ -35,7 +22,32 @@ admin.delete(
   UserControllers.delete,
 );
 
+/** User Routes */
+
+const user = Router();
+
+user.get('/', UserControllers.me);
+
+user.patch(
+  '/edit',
+  capture({
+    avatar: {
+      maxCount: 1,
+      size: 5 * 1024 * 1024,
+      default: null,
+    },
+  }),
+  purifyRequest(UserValidations.edit),
+  UserControllers.edit,
+);
+
+user.post(
+  '/change-password',
+  purifyRequest(UserValidations.changePassword),
+  AuthControllers.changePassword,
+);
+
 export const UserRoutes = {
   admin,
-  user: Router().inject(userRoutes),
+  user,
 };

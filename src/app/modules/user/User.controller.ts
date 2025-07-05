@@ -32,12 +32,8 @@ export const UserControllers = {
     });
   }),
 
-  edit: catchAsync(async ({ body, user }, res) => {
-    const data = await UserServices.edit({
-      ...body,
-      oldAvatar: user?.avatar,
-      _id: user?._id,
-    });
+  edit: catchAsync(async (req, res) => {
+    const data = await UserServices.edit(req);
 
     serveResponse(res, {
       message: 'Profile updated successfully!',

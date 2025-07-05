@@ -7,31 +7,17 @@ import User from '../user/User.model';
 import { otpGenerator } from '../../../util/crypto/otpGenerator';
 import ServerError from '../../../errors/ServerError';
 import { StatusCodes } from 'http-status-codes';
-import { Document, Types } from 'mongoose';
-import { createToken } from '../auth/Auth.utils';
+import { Types } from 'mongoose';
 import { TList } from '../query/Query.interface';
 import { TOtp } from './Otp.interface';
 import { TUser } from '../user/User.interface';
-import { EUserRole } from '../user/User.enum';
 
 export const OtpServices = {
   async send(user: TUser, type: 'resetPassword' | 'accountVerify') {
     const otp = otpGenerator(config.otp.length);
 
-    await Otp.findOneAndUpdate(
-      { user: user._id },
-      {
-        otp,
-        exp: new Date(Date.now() + ms(config.otp.exp)),
-      },
-      {
-        upsert: true,
-        new: true,
-      },
-    );
-
     if (type === 'resetPassword')
-      await sendEmail({
+      sendEmail({
         to: user.email,
         subject: `Your ${config.server.name} password reset OTP is ⚡ ${otp} ⚡.`,
         html: OtpTemplates.reset({
@@ -40,7 +26,7 @@ export const OtpServices = {
         }),
       });
     else if (type === 'accountVerify')
-      await sendEmail({
+      sendEmail({
         to: user.email,
         subject: `Your ${config.server.name} account verification OTP is ⚡ ${otp} ⚡.`,
         html: OtpTemplates.welcome({
@@ -48,6 +34,12 @@ export const OtpServices = {
           otp,
         }),
       });
+
+    return Otp.findOneAndUpdate(
+      { user: user._id },
+      { otp, exp: new Date(Date.now() + ms(config.otp.exp)) },
+      { upsert: true, new: true },
+    );
   },
 
   async verify(userId: Types.ObjectId, otp: string) {
@@ -56,28 +48,10 @@ export const OtpServices = {
     if (!validOtp)
       throw new ServerError(
         StatusCodes.UNAUTHORIZED,
-        'You are not authorized.',
-      );
-
-    await validOtp.deleteOne();
-
-    return createToken({ userId }, 'reset_token');
-  },
-
-  async verifyAccount(user: TUser & Document, otp: string) {
-    const validOtp = await Otp.findOne({ user: user._id, otp });
-
-    if (!validOtp)
-      throw new ServerError(
-        StatusCodes.UNAUTHORIZED,
         'Your credentials are incorrect.',
       );
 
-    await validOtp.deleteOne();
-
-    if (user.role === EUserRole.GUEST) user.role = EUserRole.USER;
-
-    return user.save();
+    return validOtp.deleteOne();
   },
 
   async list({ page, limit, email }: TList & { email: string }) {

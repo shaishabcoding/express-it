@@ -5,9 +5,11 @@ import auth from '../../middlewares/auth';
 import { UserControllers } from '../user/User.controller';
 import { UserValidations } from '../user/User.validation';
 import purifyRequest from '../../middlewares/purifyRequest';
-import { OtpRoutes } from '../otp/Otp.route';
 import capture from '../../middlewares/capture';
 import { UserMiddlewares } from '../user/User.middleware';
+import { OtpValidations } from '../otp/Otp.validation';
+import { OtpControllers } from '../otp/Otp.controller';
+import { otpLimiter } from '../otp/Otp.utils';
 
 const router = express.Router();
 
@@ -27,8 +29,6 @@ router.post(
 
 router.post('/logout', AuthControllers.logout);
 
-router.use('/otp', OtpRoutes.user);
-
 router.post(
   '/reset-password',
   auth.reset(),
@@ -43,6 +43,30 @@ router.get(
   '/refresh-token',
   purifyRequest(AuthValidations.refreshToken),
   AuthControllers.refreshToken,
+);
+
+/* Otps */
+router.post(
+  '/reset-password-otp-send',
+  otpLimiter,
+  purifyRequest(OtpValidations.send),
+  UserMiddlewares.useUser(),
+  OtpControllers.resetPasswordOtpSend,
+);
+
+router.post(
+  '/reset-password-otp-verify',
+  purifyRequest(OtpValidations.verify),
+  UserMiddlewares.useUser(),
+  OtpControllers.resetPasswordOtpVerify,
+);
+
+router.post(
+  '/account-verify',
+  otpLimiter,
+  purifyRequest(OtpValidations.verify),
+  UserMiddlewares.useUser(),
+  OtpControllers.verifyAccount,
 );
 
 export const AuthRoutes = router;
