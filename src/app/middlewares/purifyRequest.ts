@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { AnyZodObject } from 'zod';
-import catchAsync from '../../util/server/catchAsync';
+import catchAsync from './catchAsync';
 import config from '../../config';
 
 const keys = ['body', 'query', 'params', 'cookies'] as const;

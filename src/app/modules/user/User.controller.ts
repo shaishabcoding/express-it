@@ -1,5 +1,5 @@
 import { UserServices } from './User.service';
-import catchAsync from '../../../util/server/catchAsync';
+import catchAsync from '../../middlewares/catchAsync';
 import serveResponse from '../../../util/server/serveResponse';
 import { StatusCodes } from 'http-status-codes';
 import { AuthServices } from '../auth/Auth.service';

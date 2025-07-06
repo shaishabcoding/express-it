@@ -3,12 +3,13 @@ import { StatusCodes } from 'http-status-codes';
 import { GridFsStorage } from 'multer-gridfs-storage';
 import multer, { FileFilterCallback } from 'multer';
 import ServerError from '../../errors/ServerError';
-import catchAsync from '../../util/server/catchAsync';
+import catchAsync from './catchAsync';
 import config from '../../config';
 import mongoose from 'mongoose';
 import { GridFSBucket } from 'mongodb';
 import { errorLogger, logger } from '../../util/logger/logger';
 import colors from 'colors';
+import { json } from '../../util/transform/json';
 
 let bucket: GridFSBucket | null = null;
 
@@ -59,14 +60,17 @@ const capture = (fields: {
             : images[0];
         }
       });
-
-      next();
     } catch (error) {
       errorLogger.error(error);
 
       Object.keys(fields).forEach(field => {
         req.body[field] = fields[field].default;
       });
+    } finally {
+      if (req.body?.data) {
+        Object.assign(req.body, json(req.body.data));
+        delete req.body.data;
+      }
 
       next();
     }

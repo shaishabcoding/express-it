@@ -11,9 +11,9 @@ import handleValidationError from '../../errors/handleValidationError';
 import handleMongooseDuplicateError from '../../errors/handleMongooseDuplicateError';
 import { errorLogger } from '../../util/logger/logger';
 import { TErrorHandler, TErrorMessage } from '../../types/errors.types';
-import deleteFile from '../../util/file/deleteFile';
 import multer from 'multer';
 import handleMulterError from '../../errors/handleMulterError';
+import { deleteImage } from './capture';
 
 const defaultError: TErrorHandler = {
   statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
@@ -23,7 +23,7 @@ const defaultError: TErrorHandler = {
 
 const globalErrorHandler: ErrorRequestHandler = (error, req, res, _) => {
   /** delete uploaded files */
-  req.tempFiles?.forEach(deleteFile);
+  req.tempFiles?.forEach(deleteImage);
 
   if (config.server.isDevelopment)
     console.log(colors.red('🚨 globalErrorHandler ~~ '), error);

@@ -12,8 +12,8 @@ const server_name =
   path.basename(process.cwd())?.toCapitalize() ??
   'Server';
 
-const email =
-  process.env.EMAIL_USER ?? `admin@${server_name.toLocaleLowerCase()}.com`;
+const admin_email =
+  process.env.ADMIN_EMAIL ?? `admin@${server_name.toLocaleLowerCase()}.com`;
 
 const user_email =
   process.env.EMAIL_USER ?? `${server_name.toLocaleLowerCase()}@gmail.com`;
@@ -47,11 +47,11 @@ const config = {
       `mongodb://127.0.0.1:27017/${server_name.toLowerCase().replace(' ', '-')}`,
       'Url info - start',
     ),
-    redis: env('redis url', 'redis://redis:6379'),
-    payment: {
-      success: env('payment success url', `/payment/success`),
-      cancel: env('payment cancel url', `/payment/cancel`),
-    },
+    // redis: env('redis url', 'redis://redis:6379'),
+    // payment: {
+    //   success: env('payment success url', `/payment/success`),
+    //   cancel: env('payment cancel url', `/payment/cancel`),
+    // },
     api_doc: env('api doc', ''),
     ui: env('ui url', '', 'Url info - end', false),
   },
@@ -83,27 +83,27 @@ const config = {
     },
   },
 
-  payment: {
-    stripe: {
-      secret: env(
-        'stripe secret',
-        `sk_${genSecret(16)}`,
-        'Payment credentials - start',
-      ),
-      webhook: env('stripe webhook secret', `whsec_${genSecret(16)}`),
-    },
-    methods: env<[string, ...string[]]>('payment methods', ['card']),
-    default_method: env(
-      'default payment method',
-      'card',
-      'Payment credentials - end',
-      false,
-    ),
-  },
+  // payment: {
+  //   stripe: {
+  //     secret: env(
+  //       'stripe secret',
+  //       `sk_${genSecret(16)}`,
+  //       'Payment credentials - start',
+  //     ),
+  //     webhook: env('stripe webhook secret', `whsec_${genSecret(16)}`),
+  //   },
+  //   methods: env<[string, ...string[]]>('payment methods', ['card']),
+  //   default_method: env(
+  //     'default payment method',
+  //     'card',
+  //     'Payment credentials - end',
+  //     false,
+  //   ),
+  // },
 
   email: {
     user: env('email user', user_email, 'Email credentials - start'),
-    from: `${server_name} <${email}>`,
+    from: `${server_name} <${user_email}>`,
     port: env('email port', 587),
     host: env('email host', 'smtp.gmail.com'),
     pass: env('email pass', genSecret(4)),
@@ -117,15 +117,15 @@ const config = {
 
   admin: {
     name: env('admin name', 'Mr. Admin', 'Admin info - start'),
-    email: env('admin email', email),
+    email: env('admin email', admin_email),
     password: env('admin password', genSecret(4), 'Admin info - end', false),
   },
 
-  ai: {
-    gemini: {
-      key: env('gemini key', genSecret(16), 'AI credentials - start'),
-    },
-  },
+  // ai: {
+  //   gemini: {
+  //     key: env('gemini key', genSecret(16), 'AI credentials - start'),
+  //   },
+  // },
 };
 
 export default config;

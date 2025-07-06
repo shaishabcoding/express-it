@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import { createClient, RedisClientType } from 'redis';
-import config from '../config';
 
 // Auto-connect decorator
 function ensureConnected(
@@ -22,7 +21,7 @@ class RedisClient {
 
   private constructor() {
     this.client = createClient({
-      url: config.url.redis,
+      // url: config.url.redis,
     });
     this.client.on('error', console.error);
     this.client.on('connect', () => console.log('Redis client connected'));

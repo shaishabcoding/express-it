@@ -1,4 +1,4 @@
-import catchAsync from '../../../util/server/catchAsync';
+import catchAsync from '../../middlewares/catchAsync';
 import serveResponse from '../../../util/server/serveResponse';
 import { MessageServices } from './Message.service';
 

@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import ServerError from '../../errors/ServerError';
 import User from '../modules/user/User.model';
 import { verifyToken } from '../modules/auth/Auth.utils';
-import catchAsync from '../../util/server/catchAsync';
+import catchAsync from './catchAsync';
 import { EUserRole } from '../modules/user/User.enum';
 import { TToken } from '../modules/auth/Auth.interface';
 

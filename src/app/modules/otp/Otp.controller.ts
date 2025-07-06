@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import config from '../../../config';
 import ServerError from '../../../errors/ServerError';
-import catchAsync from '../../../util/server/catchAsync';
+import catchAsync from '../../middlewares/catchAsync';
 import serveResponse from '../../../util/server/serveResponse';
 import { createToken } from '../auth/Auth.utils';
 import { OtpServices } from './Otp.service';

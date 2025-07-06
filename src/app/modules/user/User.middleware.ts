@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import ServerError from '../../../errors/ServerError';
-import catchAsync from '../../../util/server/catchAsync';
+import catchAsync from '../../middlewares/catchAsync';
 import User from './User.model';
 
 export const UserMiddlewares = {

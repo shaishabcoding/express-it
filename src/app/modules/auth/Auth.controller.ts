@@ -1,5 +1,5 @@
 import { AuthServices } from './Auth.service';
-import catchAsync from '../../../util/server/catchAsync';
+import catchAsync from '../../middlewares/catchAsync';
 import serveResponse from '../../../util/server/serveResponse';
 import { TToken } from './Auth.interface';
 import { EUserRole } from '../user/User.enum';
