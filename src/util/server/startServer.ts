@@ -25,7 +25,7 @@ export default async function startServer() {
     await connectDB();
     await AdminServices.seed();
 
-    const server = createServer(app).listen(port, ip_address, () => {
+    const server = createServer(app).listen(port, '0.0.0.0', () => {
       logger.info(
         colors.yellow(`🚀 ${name} is running on http://${ip_address}:${port}`),
       );

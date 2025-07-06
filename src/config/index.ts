@@ -3,10 +3,22 @@ import env from '../util/env/env';
 import type ms from 'ms';
 import { genSecret } from '../util/crypto/genSecret';
 import getIpAddress from '../util/server/getIpAddress';
+import path from 'path';
 
 const node_env = process.env.NODE_ENV ?? 'development';
-const server_name = process.env.SERVER_NAME ?? 'Server';
-const email = process.env.EMAIL_USER ?? 'admin@gmail.com';
+
+const server_name =
+  process.env.SERVER_NAME ??
+  path.basename(process.cwd())?.toCapitalize() ??
+  'Server';
+
+const email =
+  process.env.EMAIL_USER ?? `admin@${server_name.toLocaleLowerCase()}.com`;
+
+const support_email =
+  process.env.EMAIL_SUPPORT ??
+  process.env.EMAIL_USER ??
+  `support@${server_name.toLocaleLowerCase()}.com`;
 
 /**
  * Configuration object for the application
@@ -94,7 +106,12 @@ const config = {
     port: env('email port', 587),
     host: env('email host', 'smtp.gmail.com'),
     pass: env('email pass', ''),
-    support: env('email support', email, 'Email credentials - end', false),
+    support: env(
+      'email support',
+      support_email,
+      'Email credentials - end',
+      false,
+    ),
   },
 
   admin: {
@@ -105,7 +122,7 @@ const config = {
 
   ai: {
     gemini: {
-      key: env('gemini key', '', 'AI credentials - start'),
+      key: env('gemini key', genSecret(16), 'AI credentials - start'),
     },
   },
 };
