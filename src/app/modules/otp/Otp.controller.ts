@@ -1,7 +1,9 @@
+import { StatusCodes } from 'http-status-codes';
+import config from '../../../config';
+import ServerError from '../../../errors/ServerError';
 import catchAsync from '../../../util/server/catchAsync';
 import serveResponse from '../../../util/server/serveResponse';
 import { createToken } from '../auth/Auth.utils';
-import { EUserRole } from '../user/User.enum';
 import { OtpServices } from './Otp.service';
 
 export const OtpControllers = {
@@ -34,24 +36,14 @@ export const OtpControllers = {
     });
   }),
 
-  verifyAccount: catchAsync(async ({ user, body }, res) => {
-    if (user.role !== EUserRole.GUEST)
-      return serveResponse(res, {
-        message: 'You are already verified!',
-      });
-
-    await OtpServices.verify(user._id, body.otp);
-
-    user.role = EUserRole.USER;
-    await user.save();
-
-    serveResponse(res, {
-      message: 'Account verified successfully!',
-      data: { user },
-    });
-  }),
-
   list: catchAsync(async ({ query }, res) => {
+    //! only for development
+    if (!config.server.isDevelopment)
+      throw new ServerError(
+        StatusCodes.UNAVAILABLE_FOR_LEGAL_REASONS,
+        'Service not available.',
+      );
+
     const { meta, otps } = await OtpServices.list(query);
 
     serveResponse(res, {

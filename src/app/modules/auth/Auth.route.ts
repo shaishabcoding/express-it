@@ -1,4 +1,4 @@
-import express from 'express';
+import { Router } from 'express';
 import { AuthControllers } from './Auth.controller';
 import { AuthValidations } from './Auth.validation';
 import auth from '../../middlewares/auth';
@@ -11,7 +11,7 @@ import { OtpValidations } from '../otp/Otp.validation';
 import { OtpControllers } from '../otp/Otp.controller';
 import { otpLimiter } from '../otp/Otp.utils';
 
-const router = express.Router();
+const router = Router();
 
 router.post(
   '/register',
@@ -39,11 +39,7 @@ router.post(
 /**
  * generate new access token
  */
-router.get(
-  '/refresh-token',
-  purifyRequest(AuthValidations.refreshToken),
-  AuthControllers.refreshToken,
-);
+router.get('/refresh-token', auth.refresh(), AuthControllers.refreshToken);
 
 /* Otps */
 router.post(
@@ -56,6 +52,7 @@ router.post(
 
 router.post(
   '/reset-password-otp-verify',
+  otpLimiter,
   purifyRequest(OtpValidations.verify),
   UserMiddlewares.useUser(),
   OtpControllers.resetPasswordOtpVerify,
@@ -66,7 +63,7 @@ router.post(
   otpLimiter,
   purifyRequest(OtpValidations.verify),
   UserMiddlewares.useUser(),
-  OtpControllers.verifyAccount,
+  AuthControllers.verifyAccount,
 );
 
 export const AuthRoutes = router;

@@ -16,14 +16,6 @@ export const AuthValidations = {
     }),
   }),
 
-  refreshToken: z.object({
-    cookies: z.object({
-      refreshToken: z.string({
-        required_error: 'refreshToken is missing',
-      }),
-    }),
-  }),
-
   resetPassword: z.object({
     body: z.object({
       password: z

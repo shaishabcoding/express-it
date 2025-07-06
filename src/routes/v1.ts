@@ -11,9 +11,10 @@ const appRouter = Router();
 /** Forward uploaded files requests */
 ['images'].map((filetype: string) =>
   appRouter.get(`/${filetype}/:filename`, (req, res) =>
-    res
-      .status(StatusCodes.PERMANENT_REDIRECT)
-      .redirect(`/${filetype}/${encodeURIComponent(req.params.filename)}`),
+    res.redirect(
+      StatusCodes.MOVED_PERMANENTLY,
+      `/${filetype}/${encodeURIComponent(req.params.filename)}`,
+    ),
   ),
 );
 

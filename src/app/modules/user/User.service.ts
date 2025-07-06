@@ -13,7 +13,7 @@ import { Request } from 'express';
 import { userSearchableFields as searchFields } from './User.constant';
 
 export const UserServices = {
-  async create(userData: TUser & TAuth) {
+  async create(userData: Partial<TUser & TAuth>) {
     return useSession(async session => {
       let user = await User.findOne({ email: userData.email }).session(session);
 
@@ -40,13 +40,11 @@ export const UserServices = {
   },
 
   async edit({ user, body }: Request) {
-    Object.assign(user, body);
-
-    await user.save();
-
     if (body.avatar && user.avatar) await deleteFile(user.avatar);
 
-    return user;
+    Object.assign(user, body);
+
+    return user.save();
   },
 
   async list({ page, limit, search }: TList) {
