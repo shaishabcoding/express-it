@@ -4,8 +4,20 @@ import AdminRoutes from '../app/modules/admin/Admin.route';
 import { AuthRoutes } from '../app/modules/auth/Auth.route';
 import { ChatRoutes } from '../app/modules/chat/Chat.route';
 import { UserRoutes } from '../app/modules/user/User.route';
+import { StatusCodes } from 'http-status-codes';
 
-export default Router().inject([
+const appRouter = Router();
+
+/** Forward uploaded files requests */
+['images'].map((filetype: string) =>
+  appRouter.get(`/${filetype}/:filename`, (req, res) =>
+    res
+      .status(StatusCodes.PERMANENT_REDIRECT)
+      .redirect(`/${filetype}/${encodeURIComponent(req.params.filename)}`),
+  ),
+);
+
+appRouter.inject([
   {
     path: '/auth',
     route: AuthRoutes,
@@ -26,3 +38,5 @@ export default Router().inject([
     route: AdminRoutes,
   },
 ]);
+
+export default appRouter;

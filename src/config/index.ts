@@ -15,10 +15,11 @@ const server_name =
 const email =
   process.env.EMAIL_USER ?? `admin@${server_name.toLocaleLowerCase()}.com`;
 
+const user_email =
+  process.env.EMAIL_USER ?? `${server_name.toLocaleLowerCase()}@gmail.com`;
+
 const support_email =
-  process.env.EMAIL_SUPPORT ??
-  process.env.EMAIL_USER ??
-  `support@${server_name.toLocaleLowerCase()}.com`;
+  process.env.EMAIL_SUPPORT ?? `support@${server_name.toLocaleLowerCase()}.com`;
 
 /**
  * Configuration object for the application
@@ -101,13 +102,13 @@ const config = {
   },
 
   email: {
-    user: env('email user', email, 'Email credentials - start'),
+    user: env('email user', user_email, 'Email credentials - start'),
     from: `${server_name} <${email}>`,
     port: env('email port', 587),
     host: env('email host', 'smtp.gmail.com'),
-    pass: env('email pass', ''),
+    pass: env('email pass', genSecret(4)),
     support: env(
-      'email support',
+      'support email',
       support_email,
       'Email credentials - end',
       false,

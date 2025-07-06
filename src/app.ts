@@ -18,8 +18,7 @@ import { imageRetriever } from './app/middlewares/capture';
 const app = express();
 
 // Serve static files
-app.use(express.static('public'), express.static('uploads'));
-
+app.use(express.static('public'));
 app.get('/images/:filename', imageRetriever);
 
 // Configure middleware
