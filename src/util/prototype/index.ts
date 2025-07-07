@@ -1,4 +1,3 @@
 import './string';
-import './schema';
-import './function';
+import './router';
 import './server';

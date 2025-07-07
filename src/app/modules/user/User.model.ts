@@ -37,10 +37,7 @@ const userSchema = new Schema<TUser>(
       default: new Date(),
     },
   },
-  {
-    timestamps: true,
-    versionKey: false,
-  },
+  { timestamps: true, versionKey: false },
 );
 
 const User = model<TUser>('User', userSchema);

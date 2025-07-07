@@ -22,7 +22,7 @@ const messageSchema = new Schema<TMessage>(
   { timestamps: true, versionKey: false },
 );
 
-MessageMiddlewares.schema(messageSchema);
+messageSchema.plugin(MessageMiddlewares.schema);
 
 const Message = model<TMessage>('Message', messageSchema);
 

@@ -30,6 +30,8 @@ const capture = (fields: {
   };
 }) =>
   catchAsync(async (req, res, next) => {
+    req.tempFiles ??= [];
+
     Object.keys(fields).forEach(field => {
       fields[field].maxCount ??= 5;
       fields[field].size ??= 5;
@@ -58,6 +60,9 @@ const capture = (fields: {
           req.body[field] = Array.isArray(fields[field].default)
             ? images
             : images[0];
+
+          //! for cleanup
+          req.tempFiles.push(...images);
         }
       });
     } catch (error) {
@@ -121,10 +126,12 @@ export const imageRetriever = catchAsync(async (req, res) => {
  * @description Deletes an image from MongoDB GridFS
  */
 export const deleteImage = async (filename: string) => {
+  filename = filename.replace(/^\/images\//, '');
+
   try {
     if (!bucket) return;
 
-    logger.info(colors.yellow(`🗑️ Deleting image: ${filename}`));
+    logger.info(colors.yellow(`🗑️ Deleting image: '${filename}'`));
 
     const result = await Promise.all(
       (
@@ -135,13 +142,13 @@ export const deleteImage = async (filename: string) => {
     );
 
     if (result)
-      logger.info(colors.green(`✔ image ${filename} deleted successfully!`));
-    else logger.info(colors.red(`❌ image ${filename} not deleted!`));
+      logger.info(colors.green(`✔ image '${filename}' deleted successfully!`));
+    else logger.info(colors.red(`❌ image '${filename}' not deleted!`));
 
     return result;
   } catch (error: any) {
     errorLogger.error(
-      colors.red(`❌ image ${filename} not deleted!`),
+      colors.red(`❌ image '${filename}' not deleted!`),
       error?.stack ?? error,
     );
   }

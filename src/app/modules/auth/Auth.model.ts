@@ -13,7 +13,7 @@ const authSchema = new Schema<TAuth>({
   },
 });
 
-AuthMiddlewares.schema(authSchema);
+authSchema.plugin(AuthMiddlewares.schema);
 
 const Auth = model<TAuth>('Auth', authSchema);
 
